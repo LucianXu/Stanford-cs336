@@ -1,0 +1,6 @@
+.venv/
+.vscode
+.pytest_cache/
+__pycache__/
+
+assignment1-basics/data/
