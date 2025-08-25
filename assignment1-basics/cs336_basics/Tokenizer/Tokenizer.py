@@ -337,6 +337,21 @@ class Tokenizer:
     def encode_iterable(self, iterable: Iterable[str]) -> Iterator[int]:
         for text in iterable:
             yield from self.encode(text)
+        """ Untested yet
+        batch_size = 1024
+        batch = []
+        for line in iterable:
+            if not line:
+                continue
+            batch.append(line)
+            if len(batch) >= batch_size:
+                for encoded in map(self.encode, batch):
+                    yield from encoded
+                batch.clear()
+        if batch:
+            for encoded in map(self.encode, batch):
+                yield from encoded
+        """
         
     def decode(self, ids: list[int]) -> str:
         return (b''.join([self.vocab[idx] for idx in ids])).decode('utf-8', errors="replace")

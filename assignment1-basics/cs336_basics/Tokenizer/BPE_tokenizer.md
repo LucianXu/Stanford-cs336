@@ -58,6 +58,7 @@ and
 ```./profile_train_bpe_expts_owt.html```
 
 ### Problem (tokenizer): Implementing the tokenizer (15 points)
+
 Full code is ```class Tokenizer```, which can be foune in ```./Tokenizer.py```. The results of testing are below:
 ```sh
 ============================================================================= 10 failed, 14 passed, 1 xfailed in 11.66s =============================================================================
@@ -99,3 +100,7 @@ tests/test_tokenizer.py::test_encode_memory_usage XFAIL (Tokenizer.encode is exp
 (cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ date
 Mon 25 Aug 2025 12:01:20 PM CST
 ```
+
+### Problem (tokenizer_experiments): Experiments with tokenizers (4 points)
+
+Skipped.
