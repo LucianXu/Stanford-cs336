@@ -28,6 +28,12 @@ def run_linear(
     Returns:
         Float[Tensor, "... d_out"]: The transformed output of your linear module.
     """
+    from cs336_basics.Model.Modules import Linear
+    device, dtype = in_features.device, in_features.dtype
+    linear = Linear(d_in, d_out, device, dtype)
+    linear.load_state_dict({'weight': weights})
+    out_features = linear(in_features)
+    return out_features
 
     raise NotImplementedError
 
@@ -300,7 +306,7 @@ def run_transformer_lm(
         num_heads (int): Number of heads to use in multi-headed attention. `d_model` must be
             evenly divisible by `num_heads`.
         d_ff (int): Dimensionality of the feed-forward inner layer (section 3.3).
-        rope_theta (float): The RoPE $\Theta$ parameter.
+        rope_theta (float): The RoPE $\\Theta$ parameter.
         weights (dict[str, Tensor]):
             State dict of our reference implementation. {num_layers} refers to an
             integer between `0` and `num_layers - 1` (the layer index).
@@ -559,7 +565,7 @@ def get_tokenizer(
     Returns:
         A BPE tokenizer that uses the provided vocab, merges, and special tokens.
     """
-    from cs336_basics.Token.Tokenizer import Tokenizer
+    from cs336_basics.Tokenizer.Tokenizer import Tokenizer
     tokenizer = Tokenizer(vocab, merges, special_tokens)
     return tokenizer
 
@@ -593,7 +599,7 @@ def run_train_bpe(
                 representing that <token1> was merged with <token2>.
                 Merges are ordered by order of creation.
     """
-    from cs336_basics.Token.Tokenizer import BPETrainer
+    from cs336_basics.Tokenizer.Tokenizer import BPETrainer
     trainer = BPETrainer()
     vocab, merges = trainer.train_BPE(input_path, vocab_size, special_tokens)
     return vocab, merges

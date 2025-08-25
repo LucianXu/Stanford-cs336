@@ -1,6 +1,6 @@
 ### Problem (train_bpe): BPE Tokenizer Training (15 points)
 
-Full code is ```class BPETrainer```, which can be foune in ```./Tokenizer.py```. The results of testing are below:
+Full code is ```class BPETrainer```, which can be foune in ```./Tokenizer.py```. The results of testing are as follows:
 ```sh
 (cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ uv run pytest tests/test_train_bpe.py
 ================================================================================== test session starts ==================================================================================
@@ -21,7 +21,7 @@ Wed 20 Aug 2025 07:05:57 PM CST
 
 ### Problem (train_bpe_tinystories): BPE Training on TinyStories (2 points)
 
-Full code is ```./train_bpe_tinystories.py```. The results are below:
+Full code is ```./train_bpe_tinystories.py```. The results are as follows:
 ```sh
 (cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics/cs336_basics/Token$ uv run scalene train_bpe_tinystories.py 
 Training BPE on TinyStoriesV2-GPT4...
@@ -40,7 +40,7 @@ and
 
 ### Problem (train_bpe_expts_owt): BPE Training on OpenWebText (2 points)
 
-Full code is ```./train_bpe_expts_owt.py```. The results are below:
+Full code is ```./train_bpe_expts_owt.py```. The results are as follows:
 ```sh
 (cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics/cs336_basics/Token$ uv run scalene train_bpe_expts_owt.py
 Training BPE on OpenWebText...
@@ -59,9 +59,8 @@ and
 
 ### Problem (tokenizer): Implementing the tokenizer (15 points)
 
-Full code is ```class Tokenizer```, which can be foune in ```./Tokenizer.py```. The results of testing are below:
+Full code is ```class Tokenizer```, which can be foune in ```./Tokenizer.py```. The results of testing are as follows:
 ```sh
-============================================================================= 10 failed, 14 passed, 1 xfailed in 11.66s =============================================================================
 (cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ uv run pytest tests/test_tokenizer.py
 ======================================================================================== test session starts ========================================================================================
 platform linux -- Python 3.13.6, pytest-8.4.1, pluggy-1.6.0
