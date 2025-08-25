@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+from einops import rearrange, einsum
 
 class Linear(nn.Module):
     def __init__(self, in_features: int, out_features: int, 
@@ -17,6 +17,5 @@ class Linear(nn.Module):
         nn.init.trunc_normal_(self.weight, mean=0.0, std=sigma, a=-3 * sigma, b=3 * sigma)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return F.linear(x, self.weight, bias=None)
-        # return torch.einsum('bsi,oi->bso', x, self.weight)
+        return einsum(x, self.weight, "... d_in, d_out d_in -> ... d_out")
     
