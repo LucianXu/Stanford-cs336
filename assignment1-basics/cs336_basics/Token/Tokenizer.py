@@ -1,5 +1,7 @@
+import pickle
 import regex as re
 from collections import defaultdict
+from typing import Iterable, Iterator
 from cs336_basics.pretokenization_example import find_chunk_boundaries
 
 
@@ -131,7 +133,7 @@ class BPETrainer_V1:  # version 1.0, not fast enough
         return vocab, merged
 
 
-class BPETrainer:
+class BPETrainer: # version 2.0, maybe fast enough
     def __init__(self):
         self.num_processes = 4
         self.PAT = r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
@@ -239,3 +241,117 @@ class BPETrainer:
         vocab, merged = self.merge(vocab_size, vocab, word_count)
 
         return vocab, merged
+
+
+class Tokenizer:
+    def __init__(self, vocab: dict[int, bytes], merges: list[tuple[bytes, bytes]], special_tokens: list[str] | None = None):
+        if special_tokens is not None:
+            for token in special_tokens:
+                token_decoded = token.encode('utf-8') if isinstance(token, str) else token
+                if token_decoded not in vocab.values():
+                    vocab[len(vocab)] = token_decoded
+        self.vocab = vocab
+        self.merges = merges
+        self.vocab_inv = {v: k for k, v in self.vocab.items()}
+        self.special_tokens = [] if special_tokens is None else sorted(special_tokens, key=len, reverse=True)
+        self.PAT = r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
+    
+    def string_to_bytes(self, s: str) -> list[bytes]:
+        return [bytes([c]) for c in s.encode('utf-8')]
+
+    def merge(self, token: list[bytes]) -> list[bytes]:
+        for x, y in self.merges:
+            merged_token = x + y
+            if self.vocab_inv.get(merged_token, None) is None:
+                continue
+            token_new = []
+            i = 0
+            while i < len(token):
+                if i + 1 != len(token) and (token[i], token[i + 1]) == (x, y):
+                    token_new.append(merged_token)
+                    i += 2
+                else:
+                    token_new.append(token[i])
+                    i += 1
+            token = token_new
+        return token
+
+    class Node:
+        def __init__(self, value: bytes):
+            self.value = value
+            self.prev: "Tokenizer.Node" | None = None
+            self.next: "Tokenizer.Node" | None = None
+
+    def _merge(self, token: list[bytes]) -> list[bytes]:
+        # Initialize the bi-linked list and pairs
+        nodes = [self.Node(None)] + [self.Node(token[i]) for i in range(len(token))] + [self.Node(None)]
+        pairs = defaultdict(list)
+        for i in range(0, len(nodes) - 2):
+            nodes[i].next = nodes[i + 1]
+            nodes[i + 1].prev = nodes[i]
+            pairs[(nodes[i].value, nodes[i + 1].value)].append(nodes[i])
+        head, tail = nodes[0], nodes[-1]
+        head.next, nodes[1].prev = nodes[1], head
+        tail.prev, nodes[-2].next = nodes[-2], tail
+        # Loop merge
+        for x, y in self.merges:
+            merged_token = x + y
+            if self.vocab_inv.get(merged_token, None) is None:
+                continue
+            for node in pairs[(x, y)]:
+                # Merge node and node.next
+                node_new = self.Node(merged_token)
+                left = node.prev
+                right = node.next.next
+                node_new.prev, left.next = left, node_new
+                node_new.next, right.prev = right, node_new
+                if left.value is not None:
+                    pairs[(left.value, node.value)].remove(left)
+                    pairs[(left.value, node_new.value)].append(left)
+                if right.value is not None:
+                    pairs[(node.next.value, right.value)].remove(node.next)
+                    pairs[(node_new.value, right.value)].append(node_new)
+            pairs.pop((x, y))
+        token = []
+        now = head
+        while now is not tail:
+            if now.value is not None:
+                token.append(now.value)
+            now = now.next
+        return token
+        
+    def encode(self, text: str) -> list[int]:
+        special_tokens_joined = "|".join(re.escape(token) for token in self.special_tokens)
+        parts = [text] if self.special_tokens == [] else re.split(f"({special_tokens_joined})", text)
+        token_list = []
+        for part in parts:
+            if part in self.special_tokens:
+                token_list.append([part.encode('utf-8') if isinstance(part, str) else part])
+            else:
+                for matched in re.finditer(self.PAT, part):
+                    token_list.extend([self.string_to_bytes(matched.group(0))])
+        token_list = [self._merge(token) for token in token_list]
+        token_list = [token for sublist in token_list for token in sublist]
+        return [self.vocab_inv[token] for token in token_list]
+    
+    def encode_iterable(self, iterable: Iterable[str]) -> Iterator[int]:
+        for text in iterable:
+            yield from self.encode(text)
+        
+    def decode(self, ids: list[int]) -> str:
+        return (b''.join([self.vocab[idx] for idx in ids])).decode('utf-8', errors="replace")
+
+    @classmethod
+    def from_files(cls, 
+                   vocab_filepath: str, 
+                   merges_filepath: str, 
+                   special_tokens: list[str] | None = None) -> tuple[dict[int, bytes], list[tuple[bytes, bytes]]]:
+        # Assume that the files are YAML files.
+        import yaml
+        with open(vocab_filepath, 'r', encoding='utf-8') as f:
+            vocab_decoded = yaml.safe_load(f)
+        with open(merges_filepath, 'r', encoding='utf-8') as f:
+            merges_decoded = yaml.load(f, Loader=yaml.FullLoader)
+        vocab = {k: v.encode("utf-8") if isinstance(v, str) else v for k, v in vocab_decoded.items()}
+        merges = [(x.encode("utf-8"), y.encode("utf-8")) for x, y in merges_decoded]
+        return cls(vocab, merges, special_tokens)

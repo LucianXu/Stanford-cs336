@@ -32,9 +32,9 @@ def load(path: str):
     with open(f"{path}/vocab.yaml", 'r', encoding='utf-8') as f:
         vocab_decoded = yaml.safe_load(f)
     with open(f"{path}/merges.yaml", 'r', encoding='utf-8') as f:
-        vocab_decoded = yaml.safe_load(f)
+        merges_decoded = yaml.safe_load(f)
     vocab = {k: v.encode("utf-8") if isinstance(v, str) else v for k, v in vocab_decoded.items()}
-    merges = [(x.encode("utf-8"), y.encode("utf-8")) for x, y in merges]
+    merges = [(x.encode("utf-8"), y.encode("utf-8")) for x, y in merges_decoded]
     return vocab, merges
 
 # Save the vocabulary and merges

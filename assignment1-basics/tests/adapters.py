@@ -559,6 +559,10 @@ def get_tokenizer(
     Returns:
         A BPE tokenizer that uses the provided vocab, merges, and special tokens.
     """
+    from cs336_basics.Token.Tokenizer import Tokenizer
+    tokenizer = Tokenizer(vocab, merges, special_tokens)
+    return tokenizer
+
     raise NotImplementedError
 
 
