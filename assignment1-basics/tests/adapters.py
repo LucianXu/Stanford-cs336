@@ -30,7 +30,7 @@ def run_linear(
     """
     from cs336_basics.Model.Modules import Linear
     device, dtype = in_features.device, in_features.dtype
-    linear = Linear(d_in, d_out, device, dtype)
+    linear = Linear(in_features=d_in, out_features=d_out, device=device, dtype=dtype)
     linear.load_state_dict({'weight': weights})
     out_features = linear(in_features)
     return out_features
@@ -56,6 +56,12 @@ def run_embedding(
     Returns:
         Float[Tensor, "... d_model"]: Batch of embeddings returned by your Embedding layer.
     """
+    from cs336_basics.Model.Modules import Embedding
+    device = token_ids.device
+    embedding = Embedding(num_embeddings=vocab_size, embedding_dim=d_model, device=device)
+    embedding.load_state_dict({'weight': weights})
+    token_embedded = embedding(token_ids)
+    return token_embedded
 
     raise NotImplementedError
 
@@ -82,6 +88,7 @@ def run_swiglu(
     Returns:
         Float[Tensor, "... d_model"]: Output embeddings of the same shape as the input embeddings.
     """
+    # Load the weights into your SwiGLU_FNN
     # Example:
     # If your state dict keys match, you can use `load_state_dict()`
     # swiglu.load_state_dict(weights)
@@ -89,6 +96,12 @@ def run_swiglu(
     # swiglu.w1.weight.data = w1_weight
     # swiglu.w2.weight.data = w2_weight
     # swiglu.w3.weight.data = w3_weight
+    from cs336_basics.Model.Modules import SwiGLUFeedFowardNeuralNerwork
+    device, dtype = in_features.device, in_features.dtype
+    model = SwiGLUFeedFowardNeuralNerwork(d_model=d_model, d_ff=d_ff, device=device, dtype=dtype)
+    model.load_state_dict({"linear1.weight": w1_weight, "linear2.weight": w2_weight, "linear3.weight": w3_weight})
+    return model(in_features)
+
     raise NotImplementedError
 
 
@@ -110,6 +123,10 @@ def run_scaled_dot_product_attention(
     Returns:
         Float[Tensor, " ... queries d_v"]: Output of SDPA
     """
+    from cs336_basics.Model.Modules import ScaledDotProductAttention
+    attention = ScaledDotProductAttention(d_k=Q.shape[-1])
+    return attention(Q, K, V, mask)
+
     raise NotImplementedError
 
 
@@ -144,6 +161,18 @@ def run_multihead_self_attention(
         Float[Tensor, " ... sequence_length d_out"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
+    from cs336_basics.Model.Modules import CausalMultiHeadSelfAttention
+    device, dtype = in_features.device, in_features.dtype
+    model = CausalMultiHeadSelfAttention(d_model=d_model, num_heads=num_heads, max_seq_len=in_features.shape[-2],
+                                         rope_type=False, device=device, dtype=dtype)
+    model.load_state_dict({
+        "Q.weight": q_proj_weight,
+        "K_trans.weight": k_proj_weight,
+        "V.weight": v_proj_weight,
+        "O.weight": o_proj_weight,
+    })
+    return model(in_features)
+
     raise NotImplementedError
 
 
@@ -184,6 +213,18 @@ def run_multihead_self_attention_with_rope(
         Float[Tensor, " ... sequence_length d_out"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
+    from cs336_basics.Model.Modules import CausalMultiHeadSelfAttention
+    device, dtype = in_features.device, in_features.dtype
+    model = CausalMultiHeadSelfAttention(d_model=d_model, num_heads=num_heads, max_seq_len=max_seq_len,
+                                         rope_type=True, theta=theta, device=device, dtype=dtype)
+    model.load_state_dict({
+        "Q.weight": q_proj_weight,
+        "K_trans.weight": k_proj_weight,
+        "V.weight": v_proj_weight,
+        "O.weight": o_proj_weight,
+    })
+    return model(in_features, token_positions)
+
     raise NotImplementedError
 
 
@@ -206,6 +247,11 @@ def run_rope(
     Returns:
         Float[Tensor, " ... sequence_length d_k"]: Tensor with RoPEd input.
     """
+    from cs336_basics.Model.Modules import RotaryPositionalEmbedding
+    device = in_query_or_key.device
+    RoPE = RotaryPositionalEmbedding(theta=theta, d_k=d_k, max_seq_len=max_seq_len, device=device)
+    return RoPE(in_query_or_key, token_positions)
+
     raise NotImplementedError
 
 
@@ -384,6 +430,13 @@ def run_rmsnorm(
         Float[Tensor,"... d_model"]: Tensor of with the same shape as `in_features` with the output of running
         RMSNorm of the `in_features`.
     """
+    from cs336_basics.Model.Modules import RootMeanSquareLayerNorm
+    device, dtype = in_features.device, in_features.dtype
+    RMSNorm = RootMeanSquareLayerNorm(d_model=d_model, eps=1e-5, device=device, dtype=dtype)
+    RMSNorm.load_state_dict({'weight': weights})
+    normed = RMSNorm(in_features)
+    return normed
+
     raise NotImplementedError
 
 
@@ -437,6 +490,9 @@ def run_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, "
         Float[Tensor, "..."]: Tensor of with the same shape as `in_features` with the output of
         softmax normalizing the specified `dim`.
     """
+    from cs336_basics.Model.Modules import softmax
+    return softmax(in_features, dim=dim)
+
     raise NotImplementedError
 
 
