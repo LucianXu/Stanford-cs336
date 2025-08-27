@@ -173,3 +173,42 @@ tests/test_model.py::test_multihead_self_attention_with_rope PASSED
 (cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ date
 Tue 26 Aug 2025 10:46:50 PM CST
 ```
+
+### Problem (transformer_block): Implement the Transformer block (3 points)
+
+Full code is ```class TransformerBlock```, which can be foune in ```./Model.py```. The results of testing are as follows:
+```sh
+(cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ uv run pytest -k test_transformer_block
+================================================================================================ test session starts =================================================================================================
+platform linux -- Python 3.13.6, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/rxxu/my/stanford-cs336/assignment1-basics
+configfile: pyproject.toml
+plugins: jaxtyping-0.3.2
+collected 48 items / 47 deselected / 1 selected                                                                                                                                                                      
+
+tests/test_model.py::test_transformer_block PASSED
+
+========================================================================================== 1 passed, 47 deselected in 0.98s ==========================================================================================
+(cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ date
+Wed 27 Aug 2025 04:38:55 PM CST
+```
+
+### Problem (transformer_lm): Implementing the Transformer LM (3 points)
+
+Full code is ```class Transformer```, which can be foune in ```./Model.py```. The results of testing are as follows:
+```sh
+(cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ uv run pytest -k test_transformer_lm
+================================================================================================ test session starts =================================================================================================
+platform linux -- Python 3.13.6, pytest-8.4.1, pluggy-1.6.0
+rootdir: /home/rxxu/my/stanford-cs336/assignment1-basics
+configfile: pyproject.toml
+plugins: jaxtyping-0.3.2
+collected 48 items / 46 deselected / 2 selected                                                                                                                                                                      
+
+tests/test_model.py::test_transformer_lm PASSED
+tests/test_model.py::test_transformer_lm_truncated_input PASSED
+
+========================================================================================== 2 passed, 46 deselected in 0.95s ==========================================================================================
+(cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ date
+Wed 27 Aug 2025 04:40:31 PM CST
+```

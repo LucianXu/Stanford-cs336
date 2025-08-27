@@ -325,6 +325,29 @@ def run_transformer_block(
         Float[Tensor, "batch sequence_length d_model"] Tensor with the output of
         running the Transformer block on the input features while using RoPE.
     """
+    device, dtype = in_features.device, in_features.dtype
+    from cs336_basics.Model.Model import TransformerBlock
+    model = TransformerBlock(
+        d_model=d_model, num_heads=num_heads, d_ff=d_ff, max_seq_len=max_seq_len, theta=theta, device=device, dtype=dtype
+    )
+    model.AttentionLayer.load_state_dict({
+        "Q.weight": weights["attn.q_proj.weight"],
+        "K_trans.weight": weights["attn.k_proj.weight"],
+        "V.weight": weights["attn.v_proj.weight"],
+        "O.weight": weights["attn.output_proj.weight"],
+    })
+    model.RSMNorm_1.load_state_dict({'weight': weights["ln1.weight"]})
+    model.RSMNorm_2.load_state_dict({'weight': weights["ln2.weight"]})
+    model.FeedForwardLayer.load_state_dict({
+        "linear1.weight": weights["ffn.w1.weight"],
+        "linear2.weight": weights["ffn.w2.weight"],
+        "linear3.weight": weights["ffn.w3.weight"],
+    })
+    batch_size, seq_length, _ = in_features.shape
+    token_positions = torch.arange(seq_length, device=device).expand(batch_size, seq_length)
+    output = model(in_features, token_positions)
+    return output
+
     raise NotImplementedError
 
 
@@ -407,6 +430,31 @@ def run_transformer_lm(
         Float[Tensor, "batch_size sequence_length vocab_size"]: Tensor with the predicted unnormalized
         next-word distribution for each token.
     """
+    from cs336_basics.Model.Model import Transformer
+    device, dtype = in_indices.device, next(iter(weights.values())).dtype 
+    model = Transformer(
+        vocab_size=vocab_size, d_model=d_model, num_layers=num_layers, num_heads=num_heads,
+        d_ff=d_ff, max_seq_len=context_length, theta=rope_theta, device=device, dtype=dtype
+    )
+    model.EmbaddingLayer.load_state_dict({'weight': weights["token_embeddings.weight"]})
+    model.RSMNorm.load_state_dict({'weight': weights["ln_final.weight"]})
+    model.OutputLayer.load_state_dict({'weight': weights["lm_head.weight"]})
+    for i in range(num_layers):
+        model.TranformerBlocks[i].AttentionLayer.load_state_dict({
+            "Q.weight": weights[f"layers.{i}.attn.q_proj.weight"],
+            "K_trans.weight": weights[f"layers.{i}.attn.k_proj.weight"],
+            "V.weight": weights[f"layers.{i}.attn.v_proj.weight"],
+            "O.weight": weights[f"layers.{i}.attn.output_proj.weight"],
+        })
+        model.TranformerBlocks[i].RSMNorm_1.load_state_dict({'weight': weights[f"layers.{i}.ln1.weight"]})
+        model.TranformerBlocks[i].RSMNorm_2.load_state_dict({'weight': weights[f"layers.{i}.ln2.weight"]})
+        model.TranformerBlocks[i].FeedForwardLayer.load_state_dict({
+            "linear1.weight": weights[f"layers.{i}.ffn.w1.weight"],
+            "linear2.weight": weights[f"layers.{i}.ffn.w2.weight"],
+            "linear3.weight": weights[f"layers.{i}.ffn.w3.weight"],
+        })
+    return model(in_indices)
+
     raise NotImplementedError
 
 
