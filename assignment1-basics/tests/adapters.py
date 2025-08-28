@@ -522,6 +522,9 @@ def run_get_batch(
         is the sampled input sequences, and the second tuple item is the corresponding
         language modeling labels.
     """
+    from cs336_basics.Training.DataLoader import GetBatch
+    return GetBatch(dataset, batch_size, context_length, device)
+
     raise NotImplementedError
 
 
@@ -637,6 +640,9 @@ def run_save_checkpoint(
             we've completed.
         out (str | os.PathLike | BinaryIO | IO[bytes]): Path or file-like object to serialize the model, optimizer, and iteration to.
     """
+    from cs336_basics.Training.Checkpoint import SaveCheckpoint
+    return SaveCheckpoint(model=model, optimizer=optimizer, iteration=iteration, out=out)
+
     raise NotImplementedError
 
 
@@ -658,6 +664,9 @@ def run_load_checkpoint(
     Returns:
         int: the previously-serialized number of iterations.
     """
+    from cs336_basics.Training.Checkpoint import LoadCheckpoint
+    return LoadCheckpoint(src=src, model=model, optimizer=optimizer)
+
     raise NotImplementedError
 
 

@@ -1,4 +1,4 @@
-### Problem (linear): Implementing the linear module (1 point)
+### Problem (cross_entropy): Implement Cross entropy
 
 Full code is ```CrossEntropy```, which can be foune in ```./Loss.py```. The results of testing are as follows:
 ```sh
