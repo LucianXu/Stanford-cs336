@@ -574,6 +574,9 @@ def run_gradient_clipping(parameters: Iterable[torch.nn.Parameter], max_l2_norm:
 
     The gradients of the parameters (parameter.grad) should be modified in-place.
     """
+    from cs336_basics.Trainer.Optimizer import GraidentClipping
+    return GraidentClipping(params=parameters, Max_norm=max_l2_norm)
+
     raise NotImplementedError
 
 
@@ -581,6 +584,9 @@ def get_adamw_cls() -> Any:
     """
     Returns a torch.optim.Optimizer that implements AdamW.
     """
+    from cs336_basics.Trainer.Optimizer import AdamW
+    return AdamW
+
     raise NotImplementedError
 
 
@@ -609,6 +615,9 @@ def run_get_lr_cosine_schedule(
     Returns:
         Learning rate at the given iteration under the specified schedule.
     """
+    from cs336_basics.Trainer.Optimizer import LearningRateScheduler
+    return LearningRateScheduler(t=it, lr_max=max_learning_rate, lr_min=min_learning_rate, T_w=warmup_iters, T_c=cosine_cycle_iters)
+
     raise NotImplementedError
 
 

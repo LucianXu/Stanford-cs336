@@ -8,4 +8,3 @@ def CrossEntropy(x: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
     x_target = x.gather(dim = -1, index = targets.unsqueeze(-1))
     loss = (x_max - x_target + torch.log(x_exp)).squeeze(-1)
     return loss.mean()
-
