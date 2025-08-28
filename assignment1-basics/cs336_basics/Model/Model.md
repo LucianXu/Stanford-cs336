@@ -212,3 +212,7 @@ tests/test_model.py::test_transformer_lm_truncated_input PASSED
 (cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ date
 Wed 27 Aug 2025 04:40:31 PM CST
 ```
+
+### Problem (transformer_accounting): Transformer LM resource accounting (5 points)
+
+Skipped.
