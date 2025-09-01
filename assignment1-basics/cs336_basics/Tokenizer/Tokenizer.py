@@ -144,7 +144,8 @@ class BPETrainer: # version 2.0, maybe fast enough
     def init_vocab(self, special_tokens: list) -> dict:
         vocab = {i: bytes([i]) for i in range(256)}
         for token in special_tokens:
-            vocab[len(vocab)] = token.encode('utf-8') if isinstance(token, str) else token
+            vocab_len = len(vocab)
+            vocab[vocab_len] = token.encode('utf-8') if isinstance(token, str) else token
         return vocab
 
     def count_word(self, input_path: str, special_tokens: list, start, end) -> dict[tuple[bytes], int]:
@@ -173,6 +174,7 @@ class BPETrainer: # version 2.0, maybe fast enough
         return pair_count, pair2word
 
     def merge(self, vocab_size: int, vocab: dict, word_count : dict) -> tuple[dict[int, bytes], list[tuple[bytes, bytes]]]:
+        assert(vocab[226] == bytes([226]))
         # Loop merge
         merged = []
         pair_count, pair2word = self.initialize(word_count)
@@ -182,7 +184,8 @@ class BPETrainer: # version 2.0, maybe fast enough
             pair_best = max([pair for pair, count in pair_count.items() if count == count_max])
 
             # If there exists pair to merge, then do it
-            vocab[len(vocab)] = pair_best[0] + pair_best[1]
+            vocab_len = len(vocab)
+            vocab[vocab_len] = pair_best[0] + pair_best[1]
             merged.append(pair_best)
             
             # Update pair_count and others
@@ -225,7 +228,6 @@ class BPETrainer: # version 2.0, maybe fast enough
     def train_BPE(self, input_path: str, vocab_size: int, special_tokens: list) -> tuple[dict, list]:
         # Initialization
         vocab = self.init_vocab(special_tokens)
-
         # Find boundaries and split strings into trunks
         with open(input_path, 'rb') as f:
             boundaries = find_chunk_boundaries(f, self.num_processes, b"<|endoftext|>")
@@ -239,7 +241,7 @@ class BPETrainer: # version 2.0, maybe fast enough
 
         # Merge
         vocab, merged = self.merge(vocab_size, vocab, word_count)
-
+        print(vocab[226], bytes([226]))
         return vocab, merged
 
 
@@ -332,7 +334,18 @@ class Tokenizer:
                     token_list.extend([self.string_to_bytes(matched.group(0))])
         token_list = [self._merge(token) for token in token_list]
         token_list = [token for sublist in token_list for token in sublist]
-        return [self.vocab_inv[token] for token in token_list]
+        # return [self.vocab_inv[token] for token in token_list]
+        # Add fallback
+        output = []
+        for token in token_list:
+            if token not in self.vocab_inv:    
+                print(token)             
+                for b in token:    
+                    print(b)                
+                    output.append(self.vocab_inv[bytes([b])])
+            else:
+                output.append(self.vocab_inv[token])
+        return output
     
     def encode_iterable(self, iterable: Iterable[str]) -> Iterator[int]:
         for text in iterable:
@@ -362,11 +375,11 @@ class Tokenizer:
                    merges_filepath: str, 
                    special_tokens: list[str] | None = None) -> tuple[dict[int, bytes], list[tuple[bytes, bytes]]]:
         # Assume that the files are YAML files.
-        import yaml
+        import base64, yaml
         with open(vocab_filepath, 'r', encoding='utf-8') as f:
-            vocab_decoded = yaml.safe_load(f)
+            vocab_encoded = yaml.safe_load(f)
         with open(merges_filepath, 'r', encoding='utf-8') as f:
-            merges_decoded = yaml.load(f, Loader=yaml.FullLoader)
-        vocab = {k: v.encode("utf-8") if isinstance(v, str) else v for k, v in vocab_decoded.items()}
-        merges = [(x.encode("utf-8"), y.encode("utf-8")) for x, y in merges_decoded]
+            merges_encoded = yaml.load(f, Loader=yaml.FullLoader)
+        vocab = {int(k): base64.b64decode(v) if isinstance(v, str) else v for k, v in vocab_encoded.items()}
+        merges = [(base64.b64decode(x), base64.b64decode(y)) for x, y in merges_encoded]
         return cls(vocab, merges, special_tokens)

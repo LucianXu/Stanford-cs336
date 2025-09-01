@@ -41,3 +41,6 @@ tests/test_serialization.py::test_checkpointing PASSED
 (cs336) rxxu@BNU:~/my/stanford-cs336/assignment1-basics$ date
 Thu 28 Aug 2025 08:45:56 PM CST
 ```
+
+### Problem (training_together): Put it together (4 points)
+Skipped

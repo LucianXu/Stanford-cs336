@@ -1,6 +1,6 @@
-import yaml
+import base64, yaml
 from itertools import islice
-from cs336_basics.Token.Tokenizer import BPETrainer
+from cs336_basics.Tokenizer.Tokenizer import BPETrainer
 
 """
 Hoping you are under the directory: "stanford-cs336/assignment1-basics/cs336_basics/Token"
@@ -21,20 +21,20 @@ print("Finished training.\n")
 
 # Save and load functions for vocabulary and merges
 def save(vocab, merges, path: str):
-    vocab_decoded = {k: v.decode("utf-8", errors="replace") if isinstance(v, bytes) else v for k, v in vocab.items()}
-    merges_decoded = [(x.decode("utf-8", errors="replace"), y.decode("utf-8", errors="replace")) for x, y in merges]
+    vocab_encoded = {k: base64.b64encode(v).decode('ascii') if isinstance(v, bytes) else v for k, v in vocab.items()}
+    merges_encoded = [(base64.b64encode(x).decode('ascii'), base64.b64encode(y).decode('ascii')) for x, y in merges]
     with open(f"{path}/vocab.yaml", 'w', encoding="utf-8") as f:
-        yaml.dump(vocab_decoded, f, allow_unicode=True)
+        yaml.dump(vocab_encoded, f, allow_unicode=True)
     with open(f"{path}/merges.yaml", 'w', encoding="utf-8") as f:
-        yaml.dump(merges_decoded, f, allow_unicode=True)
+        yaml.dump(merges_encoded, f, allow_unicode=True)
 
 def load(path: str):
     with open(f"{path}/vocab.yaml", 'r', encoding='utf-8') as f:
-        vocab_decoded = yaml.safe_load(f)
+        vocab_encoded = yaml.safe_load(f)
     with open(f"{path}/merges.yaml", 'r', encoding='utf-8') as f:
-        merges_decoded = yaml.safe_load(f)
-    vocab = {k: v.encode("utf-8") if isinstance(v, str) else v for k, v in vocab_decoded.items()}
-    merges = [(x.encode("utf-8"), y.encode("utf-8")) for x, y in merges_decoded]
+        merges_encoded = yaml.load(f, Loader=yaml.FullLoader)
+    vocab = {int(k): base64.b64decode(v) if isinstance(v, str) else v for k, v in vocab_encoded.items()}
+    merges = [(base64.b64decode(x), base64.b64decode(y)) for x, y in merges_encoded]
     return vocab, merges
 
 # Save the vocabulary and merges

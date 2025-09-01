@@ -5,3 +5,6 @@ __pycache__/
 
 assignment1-basics/data/
 run.py
+
+assignment1-basics/cs336_basics/Experiment/log.txt
+assignment1-basics/cs336_basics/Experiment/Train_tinystory.py
