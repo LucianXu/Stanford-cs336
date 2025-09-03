@@ -1,6 +1,7 @@
 .venv/
 .vscode
 .pytest_cache/
+.python_version
 __pycache__/
 
 assignment1-basics/data/
